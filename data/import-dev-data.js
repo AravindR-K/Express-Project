@@ -1,9 +1,9 @@
 const dotenv = require('dotenv')
-dotenv.config({path : './config.env'})
 const mongoose = require('mongoose')
-const app = require('./app');
+const fs = require('fs');
+const Movie = require('./../Models/movieModel'); 
 
-console.log(process.env);
+dotenv.config({path : './config.env'});
 
 mongoose.connect(process.env.CONN_STR, {
     useNewUrlParser : true
@@ -13,4 +13,30 @@ mongoose.connect(process.env.CONN_STR, {
     console.log('Some error has occured');
 });
 
-const port = process.env.PORT || 3000
+const movies = JSON.parse(fs.readFileSync('./data/movies.json', 'utf-8')); // will return a javascript array
+
+const deleteMovies = async() => {
+    try {
+        await Movie.deleteMany();
+        console.log('Data Successfully deleted.');
+    } catch(err) {
+        console.log(err.message);
+    }
+}
+
+const importMovies = async() => {
+    try {
+        await Movie.create(movies);
+        console.log('Data Successfully imported.');
+    } catch(err) {
+        console.log(err.message); 
+    }
+}
+
+if (process.argv[2] === '--import') {
+    importMovies();
+}
+if (process.argv[2] === '--delete') {
+    deleteMovies();
+}
+
